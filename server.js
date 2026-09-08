@@ -31,9 +31,9 @@ async function notificarNoivos(mensagem) {
 // Edite os dados do casamento aqui:
 const WEDDING = {
   noivos: 'Gabriel & Bianca',
-  data: '2026-11-14',
-  local: 'Espaço Jardim das Flores, São Paulo',
-  horario: '17h00',
+  data: '2026-11-07',
+  local: 'Igreja do Carmo - Cidade Velha',
+  horario: '16h00',
 };
 
 function readConvites() {
