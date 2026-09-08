@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Confirme sua presença</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #f6f1e7;
@@ -21,7 +24,8 @@
   body {
     margin: 0;
     min-height: 100vh;
-    font-family: 'Georgia', 'Times New Roman', serif;
+    font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+    font-size: 18px;
     background: linear-gradient(180deg, var(--bg), #efe6d3);
     color: var(--text);
     display: flex;
@@ -32,14 +36,19 @@
   }
   body::before {
     content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url('/assets/casal.jpg');
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background-image:
+      linear-gradient(180deg, rgba(246,241,231,0.55), rgba(239,230,211,0.7)),
+      url('/assets/casal.jpg');
     background-size: cover;
     background-position: center 25%;
-    opacity: 0.22;
-    filter: grayscale(30%) sepia(20%) brightness(1.1) contrast(95%);
-    mix-blend-mode: multiply;
+    background-repeat: no-repeat;
+    opacity: 0.85;
+    filter: grayscale(25%) sepia(15%) brightness(1.05) contrast(95%);
     -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 78%);
     mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 78%);
     z-index: 0;
@@ -59,7 +68,9 @@
   }
   h1 {
     text-align: center;
-    font-size: 1.7rem;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 700;
+    font-size: 2.1rem;
     margin: 0 0 4px;
     color: var(--accent-dark);
   }
@@ -80,8 +91,8 @@
   }
   .pessoa:last-child { border-bottom: none; }
   .pessoa-nome {
-    font-size: 1.05rem;
-    font-weight: bold;
+    font-size: 1.2rem;
+    font-weight: 600;
   }
   .toggle-group {
     display: flex;

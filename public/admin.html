@@ -24,8 +24,30 @@
     font-family: 'Segoe UI', Arial, sans-serif;
     background: linear-gradient(180deg, var(--bg), #efe6d3);
     color: var(--text);
-    padding: 24px 16px 60px;
   }
+  .topnav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 24px;
+    background: var(--card);
+    border-bottom: 3px solid var(--gold);
+  }
+  .topnav-brand {
+    font-weight: bold;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-family: 'Georgia', 'Times New Roman', serif;
+  }
+  .topnav nav a {
+    color: var(--gold-dark);
+    text-decoration: none;
+    margin-left: 18px;
+    font-size: 0.95rem;
+  }
+  .topnav nav a:hover { text-decoration: underline; }
+  .page { padding: 24px 16px 60px; }
   .wrap { max-width: 720px; margin: 0 auto; }
   h1 { color: var(--accent); margin-bottom: 4px; }
   .sub { color: var(--muted); margin-top: 0; }
@@ -142,6 +164,13 @@
 </style>
 </head>
 <body>
+  <header class="topnav">
+    <a class="topnav-brand" href="/">💍 RSVP Casamento</a>
+    <nav>
+      <a href="/">Início</a>
+    </nav>
+  </header>
+  <div class="page">
   <div class="wrap">
     <h1>Painel de Convites</h1>
     <p class="sub">Crie convites por família/grupo e envie o link individual para cada um. Não é preciso senha nem cadastro para o convidado confirmar.</p>
@@ -179,6 +208,7 @@
     </div>
 
     <p class="note">Esta página não tem senha própria — mantenha o link do admin privado e não o compartilhe com convidados.</p>
+  </div>
   </div>
 
 <script>
