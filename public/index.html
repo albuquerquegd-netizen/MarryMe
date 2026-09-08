@@ -29,8 +29,25 @@
     background: linear-gradient(180deg, var(--bg), #efe6d3);
     color: var(--text);
     display: flex;
+    align-items: flex-start;
     justify-content: center;
     padding: 40px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .flora {
+    position: fixed;
+    width: 340px;
+    height: 340px;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .flora--tl { top: -60px; left: -70px; }
+  .flora--br { bottom: -60px; right: -70px; transform: rotate(180deg); }
+  @media (max-width: 480px) {
+    .flora { width: 220px; height: 220px; }
+    .flora--tl { top: -40px; left: -60px; }
+    .flora--br { bottom: -40px; right: -60px; }
   }
   .invite-card {
     max-width: 420px;
@@ -40,6 +57,8 @@
     border-radius: 20px;
     overflow: hidden;
     box-shadow: 0 14px 36px rgba(31,44,71,0.16);
+    position: relative;
+    z-index: 1;
   }
   .hero {
     width: 100%;
@@ -111,6 +130,74 @@
 </style>
 </head>
 <body>
+  <svg class="flora flora--tl" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="soften1" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="9"/>
+      </filter>
+      <radialGradient id="gGold" cx="35%" cy="35%" r="70%">
+        <stop offset="0%" stop-color="#e3c184"/>
+        <stop offset="100%" stop-color="#a8813f"/>
+      </radialGradient>
+      <radialGradient id="gBrown" cx="35%" cy="35%" r="70%">
+        <stop offset="0%" stop-color="#8a5842"/>
+        <stop offset="100%" stop-color="#4f2a1f"/>
+      </radialGradient>
+    </defs>
+    <g filter="url(#soften1)" opacity="0.5">
+      <circle cx="55" cy="45" r="58" fill="url(#gGold)"/>
+      <circle cx="115" cy="90" r="42" fill="url(#gBrown)"/>
+      <circle cx="35" cy="120" r="36" fill="url(#gGold)"/>
+      <circle cx="150" cy="40" r="30" fill="url(#gBrown)"/>
+    </g>
+    <g fill="none" stroke="#6e3d2e" stroke-width="1.6" stroke-linecap="round" opacity="0.85">
+      <path d="M20,150 C40,110 30,70 55,35 C75,8 105,15 100,35 C95,55 65,55 60,40"/>
+      <path d="M60,90 C75,80 90,85 95,100"/>
+      <path d="M40,110 C55,105 65,112 68,125"/>
+    </g>
+    <g stroke="#4f2a1f" stroke-width="1.4" fill="none" opacity="0.9">
+      <path d="M55,35 c-14,-16 -36,-14 -40,2 c-4,15 16,24 40,10 c24,14 44,4 39,-11 c-5,-15 -25,-16 -39,-1 Z"/>
+      <path d="M115,90 c-10,-11 -25,-9 -28,2 c-3,10 11,17 28,7 c17,10 31,2 27,-9 c-4,-11 -18,-11 -27,0 Z"/>
+    </g>
+    <g fill="#8a7b64" opacity="0.55">
+      <path d="M25,140 q18,-6 22,10 q-18,8 -22,-10 Z"/>
+      <path d="M70,120 q16,-8 22,6 q-16,10 -22,-6 Z"/>
+    </g>
+  </svg>
+  <svg class="flora flora--br" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="soften2" x="-50%" y="-50%" width="200%" height="200%">
+        <feGaussianBlur stdDeviation="9"/>
+      </filter>
+      <radialGradient id="gGold2" cx="35%" cy="35%" r="70%">
+        <stop offset="0%" stop-color="#e3c184"/>
+        <stop offset="100%" stop-color="#a8813f"/>
+      </radialGradient>
+      <radialGradient id="gBrown2" cx="35%" cy="35%" r="70%">
+        <stop offset="0%" stop-color="#8a5842"/>
+        <stop offset="100%" stop-color="#4f2a1f"/>
+      </radialGradient>
+    </defs>
+    <g filter="url(#soften2)" opacity="0.5">
+      <circle cx="55" cy="45" r="58" fill="url(#gGold2)"/>
+      <circle cx="115" cy="90" r="42" fill="url(#gBrown2)"/>
+      <circle cx="35" cy="120" r="36" fill="url(#gGold2)"/>
+      <circle cx="150" cy="40" r="30" fill="url(#gBrown2)"/>
+    </g>
+    <g fill="none" stroke="#6e3d2e" stroke-width="1.6" stroke-linecap="round" opacity="0.85">
+      <path d="M20,150 C40,110 30,70 55,35 C75,8 105,15 100,35 C95,55 65,55 60,40"/>
+      <path d="M60,90 C75,80 90,85 95,100"/>
+      <path d="M40,110 C55,105 65,112 68,125"/>
+    </g>
+    <g stroke="#4f2a1f" stroke-width="1.4" fill="none" opacity="0.9">
+      <path d="M55,35 c-14,-16 -36,-14 -40,2 c-4,15 16,24 40,10 c24,14 44,4 39,-11 c-5,-15 -25,-16 -39,-1 Z"/>
+      <path d="M115,90 c-10,-11 -25,-9 -28,2 c-3,10 11,17 28,7 c17,10 31,2 27,-9 c-4,-11 -18,-11 -27,0 Z"/>
+    </g>
+    <g fill="#8a7b64" opacity="0.55">
+      <path d="M25,140 q18,-6 22,10 q-18,8 -22,-10 Z"/>
+      <path d="M70,120 q16,-8 22,6 q-16,10 -22,-6 Z"/>
+    </g>
+  </svg>
   <div class="invite-card">
     <div class="hero"></div>
     <div class="card">
