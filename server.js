@@ -1,8 +1,9 @@
-require('dotenv').config();
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -51,6 +52,35 @@ function gerarToken() {
   return crypto.randomBytes(5).toString('hex');
 }
 
+// --- Autenticação do painel dos noivos ---
+const { ADMIN_USER, ADMIN_PASSWORD } = process.env;
+
+function compararSeguro(a, b) {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return crypto.timingSafeEqual(bufA, bufB);
+}
+
+function exigirAutenticacao(req, res, next) {
+  if (!ADMIN_USER || !ADMIN_PASSWORD) {
+    return res.status(503).send('Painel indisponível: configure ADMIN_USER e ADMIN_PASSWORD nas variáveis de ambiente do servidor.');
+  }
+
+  const header = req.headers.authorization || '';
+  const [tipo, credenciais] = header.split(' ');
+
+  if (tipo === 'Basic' && credenciais) {
+    const [usuario, senha] = Buffer.from(credenciais, 'base64').toString('utf-8').split(':');
+    if (usuario && senha && compararSeguro(usuario, ADMIN_USER) && compararSeguro(senha, ADMIN_PASSWORD)) {
+      return next();
+    }
+  }
+
+  res.set('WWW-Authenticate', 'Basic realm="Painel dos noivos"');
+  res.status(401).send('Autenticação necessária.');
+}
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -58,7 +88,7 @@ app.get('/convite/:token', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'convite.html'));
 });
 
-app.get('/admin', (req, res) => {
+app.get('/admin', exigirAutenticacao, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
@@ -125,6 +155,8 @@ app.post('/api/convite/:token/confirmar', (req, res) => {
 });
 
 // --- Rotas do admin (casal) ---
+
+app.use('/api/admin', exigirAutenticacao);
 
 app.get('/api/admin/convites', (req, res) => {
   res.json(readConvites());

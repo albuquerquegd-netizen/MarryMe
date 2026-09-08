@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin RSVP</title>
+<title>Casório.com</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #f6f1e7;
@@ -29,24 +32,28 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 14px 24px;
-    background: var(--card);
+    padding: 16px 28px;
+    background: linear-gradient(180deg, var(--card), #faf3e9);
     border-bottom: 3px solid var(--gold);
+    box-shadow: 0 2px 10px rgba(31,44,71,0.06);
   }
   .topnav-brand {
-    font-weight: bold;
-    color: var(--accent);
+    font-weight: 700;
+    color: var(--accent-dark);
     text-decoration: none;
-    font-size: 1.1rem;
-    font-family: 'Georgia', 'Times New Roman', serif;
+    font-size: 1.3rem;
+    font-family: 'Playfair Display', Georgia, serif;
+    letter-spacing: 0.01em;
   }
   .topnav nav a {
     color: var(--gold-dark);
     text-decoration: none;
     margin-left: 18px;
     font-size: 0.95rem;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 600;
   }
-  .topnav nav a:hover { text-decoration: underline; }
+  .topnav nav a:hover { color: var(--accent); }
   .page { padding: 24px 16px 60px; }
   .wrap { max-width: 720px; margin: 0 auto; }
   h1 { color: var(--accent); margin-bottom: 4px; }
@@ -156,16 +163,20 @@
     padding: 8px 10px;
     border-radius: 8px;
   }
-  .note {
-    font-size: 0.8rem;
+  .site-footer {
+    text-align: center;
+    padding: 18px 16px 28px;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1rem;
+    letter-spacing: 0.03em;
     color: var(--muted);
-    margin-top: 24px;
+    border-top: 1px solid #e6d9c9;
   }
 </style>
 </head>
 <body>
   <header class="topnav">
-    <a class="topnav-brand" href="/">💍 RSVP Casamento</a>
+    <a class="topnav-brand" href="/">💍 Meu Casório</a>
     <nav>
       <a href="/">Início</a>
     </nav>
@@ -207,9 +218,9 @@
       <div class="msg" id="backupMsg"></div>
     </div>
 
-    <p class="note">Esta página não tem senha própria — mantenha o link do admin privado e não o compartilhe com convidados.</p>
   </div>
   </div>
+  <footer class="site-footer">💍 Meu Casório · Casório.com</footer>
 
 <script>
   async function carregar() {
