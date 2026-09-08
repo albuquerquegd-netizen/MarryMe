@@ -26,37 +26,33 @@
     min-height: 100vh;
     font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
     font-size: 18px;
-    background: var(--bg);
+    background: linear-gradient(180deg, var(--bg), #efe6d3);
     color: var(--text);
+    display: flex;
+    justify-content: center;
+    padding: 40px 16px;
+  }
+  .invite-card {
+    max-width: 420px;
+    width: 100%;
+    height: fit-content;
+    background: var(--card);
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 14px 36px rgba(31,44,71,0.16);
   }
   .hero {
     width: 100%;
-    height: 46vh;
-    min-height: 280px;
-    max-height: 440px;
+    aspect-ratio: 4 / 3;
     background-image:
-      linear-gradient(180deg, rgba(20,29,48,0.05) 0%, rgba(246,241,231,0.15) 70%, var(--bg) 98%),
+      linear-gradient(180deg, rgba(20,29,48,0.05) 0%, rgba(20,29,48,0) 55%),
       url('/assets/casal-hero.jpg');
     background-size: cover;
-    background-position: center 32%;
+    background-position: center 30%;
     background-repeat: no-repeat;
-    filter: saturate(0.92) contrast(0.98);
-  }
-  .content {
-    display: flex;
-    justify-content: center;
-    padding: 0 16px 40px;
-    margin-top: -70px;
-    position: relative;
-    z-index: 1;
   }
   .card {
-    background: rgba(255,253,249,0.96);
-    padding: 40px 32px 36px;
-    border-radius: 18px;
-    box-shadow: 0 10px 30px rgba(31,44,71,0.15);
-    max-width: 460px;
-    width: 100%;
+    padding: 32px 28px 36px;
     border-top: 4px solid var(--gold);
     text-align: center;
   }
@@ -115,8 +111,8 @@
 </style>
 </head>
 <body>
-  <div class="hero"></div>
-  <div class="content">
+  <div class="invite-card">
+    <div class="hero"></div>
     <div class="card">
       <p class="eyebrow">💍 Convite de Casamento</p>
       <h1 id="noivos">Carregando...</h1>
