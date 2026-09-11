@@ -138,12 +138,55 @@
     font-family: inherit;
   }
   textarea { resize: vertical; }
-  .nomes-contador {
-    margin-top: 6px;
-    font-size: 0.9rem;
-    color: var(--muted);
+  .linha-nome {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
   }
-  .nomes-contador.ok { color: var(--gold-dark); font-weight: 600; }
+  .linha-nome input {
+    flex: 1;
+    margin-top: 0;
+  }
+  .linha-nome .num {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--gold);
+    color: var(--accent-dark);
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .linha-nome .btn-remover {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #e3d5cd;
+    background: #fffaf7;
+    color: var(--brown-dark);
+    font-size: 1rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+  .linha-nome .btn-remover:hover { background: #f4e3dc; }
+  .btn-add-pessoa {
+    margin-top: 10px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: 2px dashed var(--gold);
+    background: transparent;
+    color: var(--gold-dark);
+    font-weight: 700;
+    font-size: 0.95rem;
+    cursor: pointer;
+    width: 100%;
+  }
+  .btn-add-pessoa:hover { background: #faf3e9; }
   button {
     font-family: inherit;
     cursor: pointer;
@@ -311,9 +354,9 @@
         <label for="titulo">Título do convite (ex: "Bárbara e Família")</label>
         <input type="text" id="titulo" placeholder="Bárbara e Família">
 
-        <label for="nomes">Nomes das pessoas incluídas — um por linha (aperte Enter para cada pessoa)</label>
-        <textarea id="nomes" rows="4" placeholder="Bárbara Souza&#10;Carlos Souza&#10;Mariana Souza&#10;Pedro Souza" oninput="atualizarContadorNomes()"></textarea>
-        <div class="nomes-contador" id="nomesContador">Nenhuma pessoa adicionada ainda</div>
+        <label>Pessoas incluídas neste convite</label>
+        <div id="listaNomes"></div>
+        <button type="button" class="btn-add-pessoa" onclick="adicionarCampoNome()">+ Adicionar pessoa</button>
 
         <label for="telefone">WhatsApp do responsável pela família (opcional, com DDI)</label>
         <input type="text" id="telefone" placeholder="+5511999998888">
@@ -481,26 +524,53 @@
     return div.innerHTML;
   }
 
-  function parsearNomes(texto) {
-    return texto.split(/\r?\n|[,;]/).map(n => n.trim()).filter(Boolean);
+  let proximoIdCampo = 0;
+
+  function adicionarCampoNome(foco) {
+    proximoIdCampo++;
+    const id = 'campoNome' + proximoIdCampo;
+    const div = document.createElement('div');
+    div.className = 'linha-nome';
+    div.id = id;
+    div.innerHTML = `
+      <div class="num"></div>
+      <input type="text" placeholder="Nome da pessoa" onkeydown="if(event.key==='Enter'){event.preventDefault(); adicionarCampoNome(true);}">
+      <button type="button" class="btn-remover" onclick="removerCampoNome('${id}')" title="Remover">✕</button>
+    `;
+    document.getElementById('listaNomes').appendChild(div);
+    renumerarCampos();
+    if (foco) div.querySelector('input').focus();
   }
 
-  function atualizarContadorNomes() {
-    const nomes = parsearNomes(document.getElementById('nomes').value);
-    const el = document.getElementById('nomesContador');
-    if (nomes.length === 0) {
-      el.textContent = 'Nenhuma pessoa adicionada ainda';
-      el.className = 'nomes-contador';
-    } else {
-      const rotulo = nomes.length === 1 ? 'pessoa detectada' : 'pessoas detectadas';
-      el.textContent = `${nomes.length} ${rotulo}: ${nomes.join(', ')}`;
-      el.className = 'nomes-contador ok';
+  function removerCampoNome(id) {
+    const el = document.getElementById(id);
+    if (el) el.remove();
+    if (document.getElementById('listaNomes').children.length === 0) adicionarCampoNome();
+    renumerarCampos();
+  }
+
+  function renumerarCampos() {
+    const linhas = document.getElementById('listaNomes').children;
+    for (let i = 0; i < linhas.length; i++) {
+      linhas[i].querySelector('.num').textContent = i + 1;
     }
+  }
+
+  function coletarNomes() {
+    return [...document.getElementById('listaNomes').querySelectorAll('input')]
+      .map(inp => inp.value.trim())
+      .filter(Boolean);
+  }
+
+  function resetarCamposNomes() {
+    document.getElementById('listaNomes').innerHTML = '';
+    adicionarCampoNome();
+    adicionarCampoNome();
   }
 
   async function criarConvite() {
     const titulo = document.getElementById('titulo').value.trim();
-    const nomes = parsearNomes(document.getElementById('nomes').value);
+    const nomes = coletarNomes();
     const telefone = document.getElementById('telefone').value.trim();
     const msgEl = document.getElementById('createMsg');
     msgEl.textContent = '';
@@ -525,9 +595,8 @@
     }
 
     document.getElementById('titulo').value = '';
-    document.getElementById('nomes').value = '';
+    resetarCamposNomes();
     document.getElementById('telefone').value = '';
-    atualizarContadorNomes();
     msgEl.textContent = 'Convite criado! Copie o link ou envie por WhatsApp na lista abaixo.';
     msgEl.className = 'msg ok';
     carregar();
@@ -589,6 +658,7 @@
     }
   }
 
+  resetarCamposNomes();
   carregar();
 </script>
 </body>

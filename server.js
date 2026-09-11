@@ -153,17 +153,21 @@ app.post('/api/login', (req, res) => {
   if (!ADMIN_USER || !ADMIN_PASSWORD) {
     return res.status(503).json({ error: 'Painel indisponível: configure ADMIN_USER e ADMIN_PASSWORD.' });
   }
-  const { usuario, senha } = req.body || {};
+  const { usuario, senha, manterConectado } = req.body || {};
   if (
     typeof usuario === 'string' && typeof senha === 'string' &&
     compararSeguro(usuario, ADMIN_USER) && compararSeguro(senha, ADMIN_PASSWORD)
   ) {
-    res.cookie(SESSION_COOKIE, criarTokenSessao(), {
+    const opcoesCookie = {
       httpOnly: true,
       sameSite: 'lax',
       secure: req.protocol === 'https' || req.headers['x-forwarded-proto'] === 'https',
-      maxAge: SESSION_DURACAO_MS,
-    });
+    };
+    // Sem maxAge = cookie de sessão: some quando o navegador é fechado por completo.
+    if (manterConectado === true) {
+      opcoesCookie.maxAge = SESSION_DURACAO_MS;
+    }
+    res.cookie(SESSION_COOKIE, criarTokenSessao(), opcoesCookie);
     return res.json({ ok: true });
   }
   res.status(401).json({ error: 'Usuário ou senha incorretos.' });

@@ -96,6 +96,18 @@
   }
   button:hover { background: var(--gold-dark); }
   button:disabled { opacity: 0.6; cursor: default; }
+  .manter-conectado {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 18px;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 0.92rem;
+    color: var(--muted);
+    text-align: left;
+  }
+  .manter-conectado input { width: auto; margin-top: 0; }
+  .manter-conectado label { margin-top: 0; font-weight: 400; }
   #msg {
     margin-top: 16px;
     font-size: 1rem;
@@ -116,6 +128,11 @@
 
       <label for="senha">Senha</label>
       <input type="password" id="senha" autocomplete="current-password" required>
+
+      <div class="manter-conectado">
+        <input type="checkbox" id="manterConectado">
+        <label for="manterConectado">Manter conectado neste dispositivo por 7 dias</label>
+      </div>
 
       <button type="submit" id="btnEntrar">Entrar</button>
       <p id="msg"></p>
@@ -138,6 +155,7 @@
         body: JSON.stringify({
           usuario: document.getElementById('usuario').value,
           senha: document.getElementById('senha').value,
+          manterConectado: document.getElementById('manterConectado').checked,
         }),
       });
       const data = await res.json();
