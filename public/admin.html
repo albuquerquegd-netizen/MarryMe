@@ -45,7 +45,11 @@
     font-size: 1.3rem;
     font-family: 'Playfair Display', Georgia, serif;
     letter-spacing: 0.01em;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
   }
+  .logo-mark { height: 1.4em; width: auto; }
   .topnav nav a {
     color: var(--gold-dark);
     text-decoration: none;
@@ -278,7 +282,7 @@
 </head>
 <body>
   <header class="topnav">
-    <a class="topnav-brand" href="/">💍 Meu Casório</a>
+    <a class="topnav-brand" href="/"><img class="logo-mark" src="/assets/logo-aliancas-crop.png" alt=""> Meu Casório</a>
     <nav>
       <a href="/">Início</a>
       <button class="linklike" onclick="sair()">Sair</button>
@@ -333,7 +337,7 @@
 
   </div>
   </div>
-  <footer class="site-footer">💍 Meu Casório · Casório.com</footer>
+  <footer class="site-footer"><img class="logo-mark" style="height:1.1em;vertical-align:-0.15em;" src="/assets/logo-aliancas-crop.png" alt=""> Meu Casório · Casório.com</footer>
 
 <script>
   function mudarTab(nome) {
