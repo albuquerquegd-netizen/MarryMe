@@ -6,7 +6,7 @@
 <title>Casório.com</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Cormorant+Garamond:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #f6f1e7;
@@ -24,7 +24,7 @@
   body {
     margin: 0;
     min-height: 100vh;
-    font-family: 'Segoe UI', Arial, sans-serif;
+    font-family: 'Nunito', 'Segoe UI', Arial, sans-serif;
     font-size: 17px;
     background: linear-gradient(180deg, var(--bg), #efe6d3);
     color: var(--text);
@@ -51,8 +51,8 @@
     text-decoration: none;
     margin-left: 18px;
     font-size: 0.95rem;
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-weight: 600;
+    font-family: 'Nunito', 'Segoe UI', Arial, sans-serif;
+    font-weight: 700;
   }
   .topnav nav a:hover { color: var(--accent); }
   .topnav nav button.linklike {
@@ -62,8 +62,8 @@
     text-decoration: none;
     margin-left: 18px;
     font-size: 0.95rem;
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-weight: 600;
+    font-family: 'Nunito', 'Segoe UI', Arial, sans-serif;
+    font-weight: 700;
     cursor: pointer;
     padding: 0;
   }
@@ -80,8 +80,8 @@
     border: none;
     padding: 10px 18px;
     font-size: 1rem;
-    font-family: 'Playfair Display', Georgia, serif;
-    font-weight: 600;
+    font-family: 'Nunito', 'Segoe UI', Arial, sans-serif;
+    font-weight: 700;
     color: var(--muted);
     cursor: pointer;
     border-bottom: 3px solid transparent;
@@ -157,22 +157,89 @@
 
   .convite-item {
     border-bottom: 1px solid #f0e3db;
-    padding: 14px 0;
   }
   .convite-item:last-child { border-bottom: none; }
-  .convite-titulo { font-weight: bold; font-size: 1.15rem; }
-  .pessoa-linha { font-size: 1rem; margin: 4px 0 0 8px; color: var(--muted); }
+  .convite-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 4px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .convite-row:hover { background: #faf3e9; }
+  .convite-avatar {
+    flex-shrink: 0;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+  .convite-row-main {
+    flex: 1;
+    min-width: 0;
+  }
+  .convite-titulo {
+    font-weight: 700;
+    font-size: 1.1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .convite-preview {
+    font-size: 0.95rem;
+    color: var(--muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 2px;
+  }
+  .convite-badge {
+    flex-shrink: 0;
+    min-width: 24px;
+    height: 24px;
+    padding: 0 7px;
+    border-radius: 12px;
+    background: var(--gold);
+    color: var(--accent-dark);
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .convite-badge.ok { background: #dcefe0; color: #2c6b3f; }
+  .convite-chevron {
+    flex-shrink: 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+    transition: transform 0.15s ease;
+  }
+  .convite-row.expanded .convite-chevron { transform: rotate(90deg); }
+  .convite-detalhes {
+    display: none;
+    padding: 4px 4px 18px 60px;
+  }
+  .convite-detalhes.show { display: block; }
+  .pessoa-linha { font-size: 1rem; margin: 4px 0 0; color: var(--muted); }
   .status-sim { color: var(--gold-dark); font-weight: bold; }
   .status-nao { color: var(--brown); font-weight: bold; }
   .status-pendente { color: var(--muted); }
   .link-row {
     display: flex;
     gap: 8px;
-    margin-top: 8px;
+    margin-top: 10px;
     align-items: center;
+    flex-wrap: wrap;
   }
   .link-row input {
     flex: 1;
+    min-width: 160px;
     font-size: 0.95rem;
     background: #f7f0eb;
     margin-top: 0;
@@ -201,7 +268,7 @@
   .site-footer {
     text-align: center;
     padding: 18px 16px 28px;
-    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-family: 'Nunito', 'Segoe UI', Arial, sans-serif;
     font-size: 1rem;
     letter-spacing: 0.03em;
     color: var(--muted);
@@ -315,6 +382,31 @@
     return '<span class="status-pendente">pendente…</span>';
   }
 
+  const CORES_AVATAR = ['#1f2c47', '#a8813f', '#6e3d2e', '#4f2a1f', '#3a5068'];
+
+  function corAvatar(token) {
+    let soma = 0;
+    for (const ch of token) soma += ch.charCodeAt(0);
+    return CORES_AVATAR[soma % CORES_AVATAR.length];
+  }
+
+  function iniciais(titulo) {
+    const palavras = titulo.trim().split(/\s+/).filter(Boolean);
+    const letras = palavras.slice(0, 2).map(p => p[0].toUpperCase());
+    return letras.join('') || '?';
+  }
+
+  function previewConvite(c, pendentes) {
+    if (c.mensagem) {
+      const texto = c.mensagem.length > 46 ? c.mensagem.slice(0, 46) + '…' : c.mensagem;
+      return `💬 "${escapeHtml(texto)}"`;
+    }
+    if (pendentes > 0) {
+      return `${pendentes} de ${c.pessoas.length} ainda não respondeu`;
+    }
+    return 'Todos responderam ✔';
+  }
+
   function renderLista(convites) {
     const el = document.getElementById('listaConvites');
     if (convites.length === 0) {
@@ -324,33 +416,51 @@
 
     const ordenados = [...convites].sort((a, b) => pendentesDoConvite(b) - pendentesDoConvite(a));
 
-    el.innerHTML = ordenados.map(c => {
+    el.innerHTML = ordenados.map((c, idx) => {
       const link = location.origin + '/convite/' + c.token;
       const pendentes = pendentesDoConvite(c);
-      const situacaoHtml = pendentes > 0
-        ? `<span class="status-pendente">⏳ ${pendentes} em aberto</span>`
-        : `<span class="status-sim">✔ tudo respondido</span>`;
+      const rowId = 'convite-row-' + idx;
+
+      const badgeHtml = pendentes > 0
+        ? `<div class="convite-badge">${pendentes}</div>`
+        : `<div class="convite-badge ok">✔</div>`;
+
       const pessoasHtml = c.pessoas.map(p => `<div class="pessoa-linha">${escapeHtml(p.nome)} — ${statusLabel(p.vai)}</div>`).join('');
       const mensagemHtml = c.mensagem ? `<div class="mensagem-convidado">"${escapeHtml(c.mensagem)}"</div>` : '';
 
       const whatsappHtml = c.telefone
-      ? `<button class="btn-small btn-whatsapp" onclick="enviarWhatsapp('${c.telefone}', '${escapeHtml(c.titulo)}', '${link}')">Enviar WhatsApp</button>`
-      : '';
+        ? `<button class="btn-small btn-whatsapp" onclick="event.stopPropagation(); enviarWhatsapp('${c.telefone}', '${escapeHtml(c.titulo)}', '${link}')">Enviar WhatsApp</button>`
+        : '';
 
-    return `
+      return `
         <div class="convite-item">
-          <div class="convite-titulo">${escapeHtml(c.titulo)} — ${situacaoHtml}</div>
-          ${pessoasHtml}
-          ${mensagemHtml}
-          <div class="link-row">
-            <input type="text" readonly value="${link}" onclick="this.select()">
-            <button class="btn-small" onclick="copiarLink('${link}', this)">Copiar</button>
-            ${whatsappHtml}
-            <button class="btn-small btn-danger" onclick="excluirConvite('${c.token}')">Excluir</button>
+          <div class="convite-row" id="${rowId}" onclick="alternarConvite('${rowId}')">
+            <div class="convite-avatar" style="background:${corAvatar(c.token)}">${iniciais(c.titulo)}</div>
+            <div class="convite-row-main">
+              <div class="convite-titulo">${escapeHtml(c.titulo)}</div>
+              <div class="convite-preview">${previewConvite(c, pendentes)}</div>
+            </div>
+            ${badgeHtml}
+            <div class="convite-chevron">▶</div>
+          </div>
+          <div class="convite-detalhes" id="${rowId}-detalhes">
+            ${pessoasHtml}
+            ${mensagemHtml}
+            <div class="link-row">
+              <input type="text" readonly value="${link}" onclick="event.stopPropagation(); this.select()">
+              <button class="btn-small" onclick="event.stopPropagation(); copiarLink('${link}', this)">Copiar</button>
+              ${whatsappHtml}
+              <button class="btn-small btn-danger" onclick="event.stopPropagation(); excluirConvite('${c.token}')">Excluir</button>
+            </div>
           </div>
         </div>
       `;
     }).join('');
+  }
+
+  function alternarConvite(rowId) {
+    document.getElementById(rowId).classList.toggle('expanded');
+    document.getElementById(rowId + '-detalhes').classList.toggle('show');
   }
 
   function escapeHtml(str) {
