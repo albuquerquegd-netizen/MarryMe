@@ -18,14 +18,14 @@
     --brown: #6e3d2e;
     --brown-dark: #4f2a1f;
     --text: #2b2318;
-    --muted: #8a7b64;
+    --muted: #6b5d47;
   }
   * { box-sizing: border-box; }
   body {
     margin: 0;
     min-height: 100vh;
     font-family: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-    font-size: 18px;
+    font-size: 20px;
     background: linear-gradient(180deg, var(--bg), #efe6d3);
     color: var(--text);
     display: flex;
@@ -50,7 +50,7 @@
     .flora--br { bottom: -40px; right: -60px; }
   }
   .invite-card {
-    max-width: 420px;
+    max-width: 480px;
     width: 100%;
     height: fit-content;
     background: var(--card);
@@ -78,20 +78,21 @@
   .eyebrow {
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     color: var(--muted);
     margin: 0 0 10px;
+    font-weight: 600;
   }
   h1 {
     font-family: 'Playfair Display', Georgia, serif;
     font-weight: 700;
-    font-size: 2.6rem;
+    font-size: 2.7rem;
     color: var(--accent-dark);
-    margin: 0 0 6px;
+    margin: 0 0 8px;
   }
   .subinfo {
     color: var(--muted);
-    font-size: 1.05rem;
+    font-size: 1.2rem;
     margin: 0 0 30px;
     line-height: 1.5;
   }
@@ -105,7 +106,7 @@
     padding: 14px 20px;
     border-radius: 12px;
     text-decoration: none;
-    font-size: 1.05rem;
+    font-size: 1.1rem;
     font-weight: 600;
     font-family: 'Segoe UI', Arial, sans-serif;
   }
@@ -122,7 +123,7 @@
   .cta .secondary:hover { background: var(--accent); color: #fff; }
   .guest-note {
     margin-top: 18px;
-    font-size: 0.9rem;
+    font-size: 1rem;
     color: var(--muted);
     display: none;
   }
