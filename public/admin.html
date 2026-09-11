@@ -138,6 +138,12 @@
     font-family: inherit;
   }
   textarea { resize: vertical; }
+  .nomes-contador {
+    margin-top: 6px;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  .nomes-contador.ok { color: var(--gold-dark); font-weight: 600; }
   button {
     font-family: inherit;
     cursor: pointer;
@@ -305,8 +311,9 @@
         <label for="titulo">Título do convite (ex: "Bárbara e Família")</label>
         <input type="text" id="titulo" placeholder="Bárbara e Família">
 
-        <label for="nomes">Nomes das pessoas incluídas (um por linha)</label>
-        <textarea id="nomes" rows="4" placeholder="Bárbara Souza&#10;Carlos Souza&#10;Mariana Souza&#10;Pedro Souza"></textarea>
+        <label for="nomes">Nomes das pessoas incluídas — um por linha (aperte Enter para cada pessoa)</label>
+        <textarea id="nomes" rows="4" placeholder="Bárbara Souza&#10;Carlos Souza&#10;Mariana Souza&#10;Pedro Souza" oninput="atualizarContadorNomes()"></textarea>
+        <div class="nomes-contador" id="nomesContador">Nenhuma pessoa adicionada ainda</div>
 
         <label for="telefone">WhatsApp do responsável pela família (opcional, com DDI)</label>
         <input type="text" id="telefone" placeholder="+5511999998888">
@@ -474,9 +481,26 @@
     return div.innerHTML;
   }
 
+  function parsearNomes(texto) {
+    return texto.split(/\r?\n|[,;]/).map(n => n.trim()).filter(Boolean);
+  }
+
+  function atualizarContadorNomes() {
+    const nomes = parsearNomes(document.getElementById('nomes').value);
+    const el = document.getElementById('nomesContador');
+    if (nomes.length === 0) {
+      el.textContent = 'Nenhuma pessoa adicionada ainda';
+      el.className = 'nomes-contador';
+    } else {
+      const rotulo = nomes.length === 1 ? 'pessoa detectada' : 'pessoas detectadas';
+      el.textContent = `${nomes.length} ${rotulo}: ${nomes.join(', ')}`;
+      el.className = 'nomes-contador ok';
+    }
+  }
+
   async function criarConvite() {
     const titulo = document.getElementById('titulo').value.trim();
-    const nomes = document.getElementById('nomes').value.split('\n').map(n => n.trim()).filter(Boolean);
+    const nomes = parsearNomes(document.getElementById('nomes').value);
     const telefone = document.getElementById('telefone').value.trim();
     const msgEl = document.getElementById('createMsg');
     msgEl.textContent = '';
@@ -503,6 +527,7 @@
     document.getElementById('titulo').value = '';
     document.getElementById('nomes').value = '';
     document.getElementById('telefone').value = '';
+    atualizarContadorNomes();
     msgEl.textContent = 'Convite criado! Copie o link ou envie por WhatsApp na lista abaixo.';
     msgEl.className = 'msg ok';
     carregar();
