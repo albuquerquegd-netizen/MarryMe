@@ -54,7 +54,41 @@
     font-weight: 600;
   }
   .topnav nav a:hover { color: var(--accent); }
+  .topnav nav button.linklike {
+    background: none;
+    border: none;
+    color: var(--gold-dark);
+    text-decoration: none;
+    margin-left: 18px;
+    font-size: 0.95rem;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+  }
+  .topnav nav button.linklike:hover { color: var(--accent); }
   .page { padding: 24px 16px 60px; }
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 22px;
+    border-bottom: 2px solid #e6d9c9;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 18px;
+    font-size: 1rem;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+  }
+  .tab-btn.active { color: var(--accent-dark); border-bottom-color: var(--gold); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
   .wrap { max-width: 720px; margin: 0 auto; }
   h1 { color: var(--accent); margin-bottom: 4px; }
   .sub { color: var(--muted); margin-top: 0; }
@@ -179,6 +213,7 @@
     <a class="topnav-brand" href="/">💍 Meu Casório</a>
     <nav>
       <a href="/">Início</a>
+      <button class="linklike" onclick="sair()">Sair</button>
     </nav>
   </header>
   <div class="page">
@@ -186,36 +221,46 @@
     <h1>Painel de Convites</h1>
     <p class="sub">Crie convites por família/grupo e envie o link individual para cada um. Não é preciso senha nem cadastro para o convidado confirmar.</p>
 
-    <div class="summary" id="summary"></div>
-
-    <div class="card">
-      <h2 style="margin-top:0;">Novo convite</h2>
-      <label for="titulo">Título do convite (ex: "Bárbara e Família")</label>
-      <input type="text" id="titulo" placeholder="Bárbara e Família">
-
-      <label for="nomes">Nomes das pessoas incluídas (um por linha)</label>
-      <textarea id="nomes" rows="4" placeholder="Bárbara Souza&#10;Carlos Souza&#10;Mariana Souza&#10;Pedro Souza"></textarea>
-
-      <label for="telefone">WhatsApp do responsável pela família (opcional, com DDI)</label>
-      <input type="text" id="telefone" placeholder="+5511999998888">
-
-      <button class="btn-primary" onclick="criarConvite()">Criar convite</button>
-      <div class="msg" id="createMsg"></div>
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="novo" onclick="mudarTab('novo')">Novo Convite</button>
+      <button class="tab-btn" data-tab="meus" onclick="mudarTab('meus')">Meus Convites</button>
     </div>
 
-    <div class="card">
-      <h2 style="margin-top:0;">Convites enviados</h2>
-      <div id="listaConvites">Carregando...</div>
+    <div class="tab-panel active" id="tab-novo">
+      <div class="card">
+        <h2 style="margin-top:0;">Novo convite</h2>
+        <label for="titulo">Título do convite (ex: "Bárbara e Família")</label>
+        <input type="text" id="titulo" placeholder="Bárbara e Família">
+
+        <label for="nomes">Nomes das pessoas incluídas (um por linha)</label>
+        <textarea id="nomes" rows="4" placeholder="Bárbara Souza&#10;Carlos Souza&#10;Mariana Souza&#10;Pedro Souza"></textarea>
+
+        <label for="telefone">WhatsApp do responsável pela família (opcional, com DDI)</label>
+        <input type="text" id="telefone" placeholder="+5511999998888">
+
+        <button class="btn-primary" onclick="criarConvite()">Criar convite</button>
+        <div class="msg" id="createMsg"></div>
+      </div>
     </div>
 
-    <div class="card">
-      <h2 style="margin-top:0;">Backup dos dados</h2>
-      <p class="sub" style="margin-top:0;">Baixe uma cópia de segurança periodicamente — hospedagens gratuitas podem perder dados salvos em disco.</p>
-      <button class="btn-small" onclick="baixarBackup()">Baixar backup (.json)</button>
-      <label for="restoreFile" style="margin-top:18px;">Restaurar a partir de um backup</label>
-      <input type="file" id="restoreFile" accept="application/json">
-      <button class="btn-small" onclick="restaurarBackup()">Restaurar</button>
-      <div class="msg" id="backupMsg"></div>
+    <div class="tab-panel" id="tab-meus">
+      <div class="summary" id="summary"></div>
+
+      <div class="card">
+        <h2 style="margin-top:0;">Convites enviados</h2>
+        <p class="sub" style="margin-top:0;">Convites com respostas pendentes aparecem primeiro.</p>
+        <div id="listaConvites">Carregando...</div>
+      </div>
+
+      <div class="card">
+        <h2 style="margin-top:0;">Backup dos dados</h2>
+        <p class="sub" style="margin-top:0;">Baixe uma cópia de segurança periodicamente — hospedagens gratuitas podem perder dados salvos em disco.</p>
+        <button class="btn-small" onclick="baixarBackup()">Baixar backup (.json)</button>
+        <label for="restoreFile" style="margin-top:18px;">Restaurar a partir de um backup</label>
+        <input type="file" id="restoreFile" accept="application/json">
+        <button class="btn-small" onclick="restaurarBackup()">Restaurar</button>
+        <div class="msg" id="backupMsg"></div>
+      </div>
     </div>
 
   </div>
@@ -223,11 +268,29 @@
   <footer class="site-footer">💍 Meu Casório · Casório.com</footer>
 
 <script>
+  function mudarTab(nome) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === nome));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + nome));
+  }
+
+  async function sair() {
+    await fetch('/api/logout', { method: 'POST' });
+    window.location.href = '/login';
+  }
+
   async function carregar() {
     const res = await fetch('/api/admin/convites');
+    if (res.status === 401) {
+      window.location.href = '/login';
+      return;
+    }
     const convites = await res.json();
     renderSummary(convites);
     renderLista(convites);
+  }
+
+  function pendentesDoConvite(c) {
+    return c.pessoas.filter(p => p.vai === null || p.vai === undefined).length;
   }
 
   function renderSummary(convites) {
@@ -258,8 +321,14 @@
       return;
     }
 
-    el.innerHTML = convites.map(c => {
+    const ordenados = [...convites].sort((a, b) => pendentesDoConvite(b) - pendentesDoConvite(a));
+
+    el.innerHTML = ordenados.map(c => {
       const link = location.origin + '/convite/' + c.token;
+      const pendentes = pendentesDoConvite(c);
+      const situacaoHtml = pendentes > 0
+        ? `<span class="status-pendente">⏳ ${pendentes} em aberto</span>`
+        : `<span class="status-sim">✔ tudo respondido</span>`;
       const pessoasHtml = c.pessoas.map(p => `<div class="pessoa-linha">${escapeHtml(p.nome)} — ${statusLabel(p.vai)}</div>`).join('');
       const mensagemHtml = c.mensagem ? `<div class="mensagem-convidado">"${escapeHtml(c.mensagem)}"</div>` : '';
 
@@ -269,7 +338,7 @@
 
     return `
         <div class="convite-item">
-          <div class="convite-titulo">${escapeHtml(c.titulo)}</div>
+          <div class="convite-titulo">${escapeHtml(c.titulo)} — ${situacaoHtml}</div>
           ${pessoasHtml}
           ${mensagemHtml}
           <div class="link-row">

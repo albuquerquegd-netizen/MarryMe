@@ -10,6 +10,12 @@ services:
         sync: false
       - key: ADMIN_PASSWORD
         sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASSWORD
+        sync: false
+      - key: COUPLE_EMAILS
+        sync: false
       - key: TWILIO_ACCOUNT_SID
         sync: false
       - key: TWILIO_AUTH_TOKEN

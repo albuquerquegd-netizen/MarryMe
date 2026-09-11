@@ -9,22 +9,47 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'data', 'convites.json');
 
-// --- Notificação por SMS para os noivos (via Twilio) ---
+// --- Notificação por e-mail para os noivos (via Gmail) ---
+const nodemailer = require('nodemailer');
+const { EMAIL_USER, EMAIL_PASSWORD, COUPLE_EMAILS } = process.env;
+const emailAtivado = EMAIL_USER && EMAIL_PASSWORD && COUPLE_EMAILS;
+const emailTransporter = emailAtivado
+  ? nodemailer.createTransport({ service: 'gmail', auth: { user: EMAIL_USER, pass: EMAIL_PASSWORD } })
+  : null;
+const emailsNoivos = emailAtivado ? COUPLE_EMAILS.split(',').map((e) => e.trim()).filter(Boolean) : [];
+
+// --- Notificação por SMS para os noivos (via Twilio, opcional) ---
 const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER, COUPLE_PHONE_NUMBERS } = process.env;
 const smsAtivado = TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN && TWILIO_FROM_NUMBER && COUPLE_PHONE_NUMBERS;
 const twilioClient = smsAtivado ? require('twilio')(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) : null;
 const numerosNoivos = smsAtivado ? COUPLE_PHONE_NUMBERS.split(',').map((n) => n.trim()).filter(Boolean) : [];
 
-async function notificarNoivos(mensagem) {
-  if (!smsAtivado) {
-    console.log('[SMS não configurado — veja .env.example] ' + mensagem);
+async function notificarNoivos(assunto, mensagem) {
+  if (!emailAtivado && !smsAtivado) {
+    console.log('[Notificação não configurada — veja .env.example] ' + assunto + ' | ' + mensagem);
     return;
   }
-  for (const numero of numerosNoivos) {
+
+  if (emailAtivado) {
     try {
-      await twilioClient.messages.create({ body: mensagem, from: TWILIO_FROM_NUMBER, to: numero });
+      await emailTransporter.sendMail({
+        from: EMAIL_USER,
+        to: emailsNoivos.join(','),
+        subject: assunto,
+        text: mensagem,
+      });
     } catch (err) {
-      console.error(`Falha ao enviar SMS para ${numero}:`, err.message);
+      console.error('Falha ao enviar e-mail:', err.message);
+    }
+  }
+
+  if (smsAtivado) {
+    for (const numero of numerosNoivos) {
+      try {
+        await twilioClient.messages.create({ body: mensagem, from: TWILIO_FROM_NUMBER, to: numero });
+      } catch (err) {
+        console.error(`Falha ao enviar SMS para ${numero}:`, err.message);
+      }
     }
   }
 }
@@ -52,8 +77,10 @@ function gerarToken() {
   return crypto.randomBytes(5).toString('hex');
 }
 
-// --- Autenticação do painel dos noivos ---
+// --- Autenticação do painel dos noivos (login por cookie de sessão) ---
 const { ADMIN_USER, ADMIN_PASSWORD } = process.env;
+const SESSION_COOKIE = 'casorio_sessao';
+const SESSION_DURACAO_MS = 7 * 24 * 60 * 60 * 1000; // 7 dias
 
 function compararSeguro(a, b) {
   const bufA = Buffer.from(a);
@@ -62,23 +89,53 @@ function compararSeguro(a, b) {
   return crypto.timingSafeEqual(bufA, bufB);
 }
 
+function segredoSessao() {
+  return crypto.createHash('sha256').update(`${ADMIN_USER}:${ADMIN_PASSWORD}`).digest();
+}
+
+function criarTokenSessao() {
+  const payload = Buffer.from(JSON.stringify({ exp: Date.now() + SESSION_DURACAO_MS })).toString('base64url');
+  const assinatura = crypto.createHmac('sha256', segredoSessao()).update(payload).digest('base64url');
+  return `${payload}.${assinatura}`;
+}
+
+function tokenSessaoValido(token) {
+  if (!token || typeof token !== 'string' || !token.includes('.')) return false;
+  const [payload, assinatura] = token.split('.');
+  const esperada = crypto.createHmac('sha256', segredoSessao()).update(payload).digest('base64url');
+  if (!compararSeguro(assinatura, esperada)) return false;
+  try {
+    const dados = JSON.parse(Buffer.from(payload, 'base64url').toString('utf-8'));
+    return typeof dados.exp === 'number' && dados.exp > Date.now();
+  } catch {
+    return false;
+  }
+}
+
+function lerCookies(req) {
+  const header = req.headers.cookie || '';
+  const cookies = {};
+  header.split(';').forEach((par) => {
+    const [chave, ...resto] = par.trim().split('=');
+    if (chave) cookies[chave] = decodeURIComponent(resto.join('='));
+  });
+  return cookies;
+}
+
 function exigirAutenticacao(req, res, next) {
   if (!ADMIN_USER || !ADMIN_PASSWORD) {
     return res.status(503).send('Painel indisponível: configure ADMIN_USER e ADMIN_PASSWORD nas variáveis de ambiente do servidor.');
   }
 
-  const header = req.headers.authorization || '';
-  const [tipo, credenciais] = header.split(' ');
-
-  if (tipo === 'Basic' && credenciais) {
-    const [usuario, senha] = Buffer.from(credenciais, 'base64').toString('utf-8').split(':');
-    if (usuario && senha && compararSeguro(usuario, ADMIN_USER) && compararSeguro(senha, ADMIN_PASSWORD)) {
-      return next();
-    }
+  const cookies = lerCookies(req);
+  if (tokenSessaoValido(cookies[SESSION_COOKIE])) {
+    return next();
   }
 
-  res.set('WWW-Authenticate', 'Basic realm="Painel dos noivos"');
-  res.status(401).send('Autenticação necessária.');
+  if (req.path.startsWith('/api/')) {
+    return res.status(401).json({ error: 'Sessão expirada ou inválida. Faça login novamente.' });
+  }
+  res.redirect('/login');
 }
 
 app.use(express.json());
@@ -86,6 +143,35 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/convite/:token', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'convite.html'));
+});
+
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+app.post('/api/login', (req, res) => {
+  if (!ADMIN_USER || !ADMIN_PASSWORD) {
+    return res.status(503).json({ error: 'Painel indisponível: configure ADMIN_USER e ADMIN_PASSWORD.' });
+  }
+  const { usuario, senha } = req.body || {};
+  if (
+    typeof usuario === 'string' && typeof senha === 'string' &&
+    compararSeguro(usuario, ADMIN_USER) && compararSeguro(senha, ADMIN_PASSWORD)
+  ) {
+    res.cookie(SESSION_COOKIE, criarTokenSessao(), {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: req.protocol === 'https' || req.headers['x-forwarded-proto'] === 'https',
+      maxAge: SESSION_DURACAO_MS,
+    });
+    return res.json({ ok: true });
+  }
+  res.status(401).json({ error: 'Usuário ou senha incorretos.' });
+});
+
+app.post('/api/logout', (req, res) => {
+  res.clearCookie(SESSION_COOKIE);
+  res.json({ ok: true });
 });
 
 app.get('/admin', exigirAutenticacao, (req, res) => {
@@ -146,10 +232,13 @@ app.post('/api/convite/:token/confirmar', (req, res) => {
     }));
 
     mudancas.forEach((m) => {
+      const assunto = m.vai
+        ? `✅ ${m.nome} confirmou presença — ${convite.titulo}`
+        : `❌ ${m.nome} avisou que não vai — ${convite.titulo}`;
       const texto = m.vai
         ? `🔔 RSVP: ${m.nome} confirmou presença! ✅ (${convite.titulo})`
         : `🔔 RSVP: ${m.nome} avisou que não poderá comparecer. ❌ (${convite.titulo})`;
-      notificarNoivos(`${texto}\nTotal: ${confirmados} confirmados, ${naoVao} não vão, ${pendentes} pendentes.`);
+      notificarNoivos(assunto, `${texto}\nTotal: ${confirmados} confirmados, ${naoVao} não vão, ${pendentes} pendentes.`);
     });
   }
 });
