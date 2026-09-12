@@ -174,6 +174,13 @@ function exigirAutenticacao(req, res, next) {
 }
 
 app.use(express.json());
+
+// Precisa vir antes do express.static para proteger o arquivo, já que o
+// static serviria admin.html diretamente sem checar autenticação.
+app.get('/admin.html', exigirAutenticacao, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin.html'));
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.get('/convite/:token', (req, res) => {
