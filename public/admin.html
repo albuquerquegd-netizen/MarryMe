@@ -640,9 +640,13 @@
   function enviarWhatsapp(telefone, titulo, link) {
     const numero = telefone.replace(/\D/g, '');
     const texto = `Olá, ${titulo}! Vocês estão convidados para o nosso casamento 💍 Por favor, confirmem a presença de cada um pelo link: ${link}`;
-    // Vai direto para a conversa no WhatsApp Web (sem tela de pré-visualização),
-    // já que normalmente vocês estarão logados no navegador do computador.
-    window.open(`https://web.whatsapp.com/send?phone=${numero}&text=${encodeURIComponent(texto)}`, '_blank');
+    const noCelular = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    // No celular, abre o app nativo do WhatsApp (wa.me cuida disso).
+    // No computador, vai direto para a conversa no WhatsApp Web, sem tela de pré-visualização.
+    const url = noCelular
+      ? `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`
+      : `https://web.whatsapp.com/send?phone=${numero}&text=${encodeURIComponent(texto)}`;
+    window.open(url, '_blank');
   }
 
   async function excluirConvite(token) {
