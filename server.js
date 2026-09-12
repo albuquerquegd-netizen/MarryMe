@@ -9,6 +9,18 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'data', 'convites.json');
 
+// --- Armazenamento persistente (Supabase) ---
+// Sem isso configurado, os dados ficam num arquivo local que se perde a cada
+// deploy no Render (disco não-permanente). Veja .env.example.
+const { createClient } = require('@supabase/supabase-js');
+const { SUPABASE_URL, SUPABASE_SERVICE_KEY } = process.env;
+const supabaseAtivado = SUPABASE_URL && SUPABASE_SERVICE_KEY;
+const supabase = supabaseAtivado ? createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY) : null;
+
+if (!supabaseAtivado) {
+  console.log('[Supabase não configurado — veja .env.example] usando arquivo local (não sobrevive a deploys).');
+}
+
 // --- Notificação por e-mail para os noivos (via Gmail) ---
 const nodemailer = require('nodemailer');
 const { EMAIL_USER, EMAIL_PASSWORD, COUPLE_EMAILS } = process.env;
@@ -62,13 +74,34 @@ const WEDDING = {
   horario: '16h00',
 };
 
-function readConvites() {
+async function readConvites() {
+  if (supabaseAtivado) {
+    const { data, error } = await supabase
+      .from('app_dados')
+      .select('valor')
+      .eq('chave', 'convites')
+      .maybeSingle();
+    if (error) {
+      console.error('Erro ao ler convites do Supabase:', error.message);
+      return [];
+    }
+    return data?.valor || [];
+  }
+
   if (!fs.existsSync(DATA_FILE)) return [];
   const raw = fs.readFileSync(DATA_FILE, 'utf-8').trim();
   return raw ? JSON.parse(raw) : [];
 }
 
-function writeConvites(list) {
+async function writeConvites(list) {
+  if (supabaseAtivado) {
+    const { error } = await supabase
+      .from('app_dados')
+      .upsert({ chave: 'convites', valor: list });
+    if (error) console.error('Erro ao salvar convites no Supabase:', error.message);
+    return;
+  }
+
   fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
   fs.writeFileSync(DATA_FILE, JSON.stringify(list, null, 2), 'utf-8');
 }
@@ -188,15 +221,15 @@ app.get('/api/config', (req, res) => {
 
 // --- Rotas do convidado (via token, sem login) ---
 
-app.get('/api/convite/:token', (req, res) => {
-  const convites = readConvites();
+app.get('/api/convite/:token', async (req, res) => {
+  const convites = await readConvites();
   const convite = convites.find((c) => c.token === req.params.token);
   if (!convite) return res.status(404).json({ error: 'Convite não encontrado.' });
   res.json(convite);
 });
 
-app.post('/api/convite/:token/confirmar', (req, res) => {
-  const convites = readConvites();
+app.post('/api/convite/:token/confirmar', async (req, res) => {
+  const convites = await readConvites();
   const convite = convites.find((c) => c.token === req.params.token);
   if (!convite) return res.status(404).json({ error: 'Convite não encontrado.' });
 
@@ -224,7 +257,7 @@ app.post('/api/convite/:token/confirmar', (req, res) => {
   convite.mensagem = typeof mensagem === 'string' ? mensagem.trim().slice(0, 500) : (convite.mensagem || '');
   convite.confirmadoEm = new Date().toISOString();
 
-  writeConvites(convites);
+  await writeConvites(convites);
   res.json({ ok: true, convite });
 
   if (mudancas.length > 0) {
@@ -251,17 +284,17 @@ app.post('/api/convite/:token/confirmar', (req, res) => {
 
 app.use('/api/admin', exigirAutenticacao);
 
-app.get('/api/admin/convites', (req, res) => {
-  res.json(readConvites());
+app.get('/api/admin/convites', async (req, res) => {
+  res.json(await readConvites());
 });
 
-app.get('/api/admin/backup', (req, res) => {
+app.get('/api/admin/backup', async (req, res) => {
   const dataFormatada = new Date().toISOString().slice(0, 10);
   res.setHeader('Content-Disposition', `attachment; filename="rsvp-backup-${dataFormatada}.json"`);
-  res.json(readConvites());
+  res.json(await readConvites());
 });
 
-app.post('/api/admin/restore', (req, res) => {
+app.post('/api/admin/restore', async (req, res) => {
   const convites = req.body;
   if (!Array.isArray(convites)) {
     return res.status(400).json({ error: 'Arquivo de backup inválido.' });
@@ -272,11 +305,11 @@ app.post('/api/admin/restore', (req, res) => {
   if (!valido) {
     return res.status(400).json({ error: 'Arquivo de backup inválido.' });
   }
-  writeConvites(convites);
+  await writeConvites(convites);
   res.json({ ok: true, total: convites.length });
 });
 
-app.post('/api/admin/convites', (req, res) => {
+app.post('/api/admin/convites', async (req, res) => {
   const { titulo, nomes, telefone } = req.body || {};
 
   if (typeof titulo !== 'string' || !titulo.trim()) {
@@ -286,7 +319,7 @@ app.post('/api/admin/convites', (req, res) => {
     return res.status(400).json({ error: 'Informe ao menos um nome válido.' });
   }
 
-  const convites = readConvites();
+  const convites = await readConvites();
 
   let token;
   do {
@@ -308,18 +341,18 @@ app.post('/api/admin/convites', (req, res) => {
   };
 
   convites.push(novoConvite);
-  writeConvites(convites);
+  await writeConvites(convites);
 
   res.status(201).json(novoConvite);
 });
 
-app.delete('/api/admin/convites/:token', (req, res) => {
-  const convites = readConvites();
+app.delete('/api/admin/convites/:token', async (req, res) => {
+  const convites = await readConvites();
   const filtrado = convites.filter((c) => c.token !== req.params.token);
   if (filtrado.length === convites.length) {
     return res.status(404).json({ error: 'Convite não encontrado.' });
   }
-  writeConvites(filtrado);
+  await writeConvites(filtrado);
   res.json({ ok: true });
 });
 
