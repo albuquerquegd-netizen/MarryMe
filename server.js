@@ -19,6 +19,8 @@ const supabase = supabaseAtivado ? createClient(SUPABASE_URL, SUPABASE_SERVICE_K
 
 if (!supabaseAtivado) {
   console.log('[Supabase não configurado — veja .env.example] usando arquivo local (não sobrevive a deploys).');
+} else {
+  console.log('[Supabase conectado] convites serão salvos de forma permanente.');
 }
 
 // --- Notificação por e-mail para os noivos (via Gmail) ---
@@ -356,6 +358,16 @@ app.delete('/api/admin/convites/:token', async (req, res) => {
   res.json({ ok: true });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`RSVP rodando em http://localhost:${PORT}`);
+
+  if (supabaseAtivado) {
+    const { error } = await supabase.from('app_dados').select('chave').limit(1);
+    if (error) {
+      console.error('[Supabase] Falha ao conectar/consultar a tabela app_dados:', error.message);
+      console.error('[Supabase] Confira se a tabela foi criada e se SUPABASE_URL/SUPABASE_SERVICE_KEY estão corretos.');
+    } else {
+      console.log('[Supabase] Conexão testada com sucesso — tabela app_dados acessível.');
+    }
+  }
 });
