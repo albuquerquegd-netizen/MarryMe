@@ -637,6 +637,8 @@
     carregar();
   }
 
+  let janelaWhatsapp = null;
+
   function enviarWhatsapp(telefone, titulo, link) {
     const numero = telefone.replace(/\D/g, '');
     const texto = `Olá, ${titulo}! Vocês estão convidados para o nosso casamento 💍 Por favor, confirmem a presença de cada um pelo link: ${link}`;
@@ -646,12 +648,17 @@
     const url = noCelular
       ? `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`
       : `https://web.whatsapp.com/send?phone=${numero}&text=${encodeURIComponent(texto)}`;
-    // Usa um nome de janela fixo para sempre reaproveitar a mesma aba do
-    // WhatsApp Web, em vez de abrir várias sessões em paralelo — o WhatsApp
-    // Web não permite duas sessões simultâneas e "trava" na conversa antiga
-    // quando isso acontece.
-    const janela = window.open(url, 'casorioWhatsapp');
-    if (janela) janela.focus();
+
+    // Guardamos a referência da janela em memória e navegamos nela
+    // diretamente, em vez de confiar no "nome" da janela — o próprio
+    // WhatsApp Web costuma resetar isso internamente, o que fazia o
+    // navegador abrir uma aba nova a cada clique.
+    if (janelaWhatsapp && !janelaWhatsapp.closed) {
+      janelaWhatsapp.location.href = url;
+      janelaWhatsapp.focus();
+    } else {
+      janelaWhatsapp = window.open(url, '_blank');
+    }
   }
 
   async function excluirConvite(token) {
