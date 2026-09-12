@@ -310,6 +310,19 @@
   .msg { margin-top: 10px; font-size: 1rem; }
   .msg.err { color: var(--brown-dark); }
   .msg.ok { color: var(--gold-dark); }
+  .resultado-convite {
+    margin-top: 18px;
+    padding: 14px;
+    border-radius: 10px;
+    background: #f2e9db;
+    border: 1px solid var(--gold);
+  }
+  .resultado-titulo {
+    margin: 0 0 4px;
+    font-weight: 700;
+    color: var(--gold-dark);
+    font-size: 0.98rem;
+  }
   .mensagem-convidado {
     margin-top: 8px;
     font-style: italic;
@@ -363,6 +376,15 @@
 
         <button class="btn-primary" onclick="criarConvite()">Criar convite</button>
         <div class="msg" id="createMsg"></div>
+
+        <div class="resultado-convite" id="resultadoConvite" style="display:none;">
+          <p class="resultado-titulo">✔ Convite criado! Envie para o responsável:</p>
+          <div class="link-row">
+            <input type="text" readonly id="resultadoLink" onclick="this.select()">
+            <button class="btn-small" id="resultadoBtnCopiar" onclick="copiarLink(document.getElementById('resultadoLink').value, this)">Copiar</button>
+            <button class="btn-small btn-whatsapp" id="resultadoBtnWhatsapp" style="display:none;">Enviar WhatsApp</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -594,18 +616,33 @@
       return;
     }
 
+    const novoConvite = await res.json();
+    const link = location.origin + '/convite/' + novoConvite.token;
+
     document.getElementById('titulo').value = '';
     resetarCamposNomes();
     document.getElementById('telefone').value = '';
-    msgEl.textContent = 'Convite criado! Copie o link ou envie por WhatsApp na lista abaixo.';
-    msgEl.className = 'msg ok';
+    msgEl.textContent = '';
+
+    document.getElementById('resultadoLink').value = link;
+    const btnWpp = document.getElementById('resultadoBtnWhatsapp');
+    if (telefone) {
+      btnWpp.style.display = '';
+      btnWpp.onclick = () => enviarWhatsapp(telefone, titulo, link);
+    } else {
+      btnWpp.style.display = 'none';
+    }
+    document.getElementById('resultadoConvite').style.display = 'block';
+
     carregar();
   }
 
   function enviarWhatsapp(telefone, titulo, link) {
     const numero = telefone.replace(/\D/g, '');
     const texto = `Olá, ${titulo}! Vocês estão convidados para o nosso casamento 💍 Por favor, confirmem a presença de cada um pelo link: ${link}`;
-    window.open(`https://wa.me/${numero}?text=${encodeURIComponent(texto)}`, '_blank');
+    // Vai direto para a conversa no WhatsApp Web (sem tela de pré-visualização),
+    // já que normalmente vocês estarão logados no navegador do computador.
+    window.open(`https://web.whatsapp.com/send?phone=${numero}&text=${encodeURIComponent(texto)}`, '_blank');
   }
 
   async function excluirConvite(token) {
